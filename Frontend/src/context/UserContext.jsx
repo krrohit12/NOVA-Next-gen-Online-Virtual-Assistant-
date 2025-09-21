@@ -5,7 +5,7 @@ import { createContext, useEffect, useState } from "react";
 export const UserDataContext = createContext();
 
 export const UserContext = ({ children }) => {
-    const serverUrl="http://localhost:8000"
+    const serverUrl="https://nova-next-gen-online-virtual-assistant.onrender.com"
     // eslint-disable-next-line no-unused-vars
     const [userData,setUserData]= useState(null)
       const [frontendImage, setFrontendImage]=useState(null);
