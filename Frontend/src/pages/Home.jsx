@@ -32,7 +32,7 @@ const Home = () => {
       setUserData(null)
       setShowSettingsPopup(false)
     } catch (error) {
-      console.log('Logout error:', error)
+      // Handle logout error silently
     }
   }
 
@@ -42,7 +42,6 @@ const Home = () => {
   }
 
   const handleShowHistory = () => {
-    console.log('Opening history modal. Current history:', userData?.history)
     setShowHistoryModal(true)
     setShowSettingsPopup(false)
   }
@@ -55,48 +54,27 @@ const Home = () => {
 
   const initializeSpeech = () => {
     if (speechInitialized.current) {
-      console.log('Speech already initialized')
       return
     }
 
-    console.log('🔧 Initializing speech synthesis...')
-
-    // Wait for voices to load and log available voices
-    const logVoices = () => {
-      const voices = window.speechSynthesis.getVoices()
-      console.log('🎤 Available voices:', voices.map(v => `${v.name} (${v.lang})`))
-
-      // Log Hindi/Indian voices specifically
-      const indianVoices = voices.filter(voice =>
-        voice.lang.includes('hi') ||
-        voice.lang.includes('IN') ||
-        voice.name.toLowerCase().includes('hindi') ||
-        voice.name.toLowerCase().includes('indian')
-      )
-      if (indianVoices.length > 0) {
-        console.log(' Hindi/Indian voices found:', indianVoices.map(v => `${v.name} (${v.lang})`))
-      } else {
-        console.log(' No Hindi/Indian voices available')
-      }
+    // Wait for voices to load
+    const loadVoices = () => {
+      window.speechSynthesis.getVoices()
     }
 
-    // Log voices immediately and also when they load
-    logVoices()
-    window.speechSynthesis.onvoiceschanged = logVoices
+    // Load voices immediately and also when they load
+    loadVoices()
+    window.speechSynthesis.onvoiceschanged = loadVoices
 
     speechInitialized.current = true
-    console.log('Speech synthesis enabled')
   }
 
   const speak = (text, retryCount = 0) => {
     if (!text?.trim()) return
-
-    console.log(' Starting to speak:', text)
     setAiText(text)
     setUserText('')
 
     if (!window.speechSynthesis) {
-      console.log(' Speech synthesis not supported')
       return
     }
 
@@ -112,11 +90,8 @@ const Home = () => {
     // Cancel any ongoing speech and wait a moment before starting new speech
     if (window.speechSynthesis.speaking) {
       if (retryCount < 3) {
-        console.log(' Speech in progress, canceling and restarting...')
         window.speechSynthesis.cancel()
         setTimeout(() => speak(text, retryCount + 1), 200)
-      } else {
-        console.log(' Too many speech retries, skipping...')
       }
       return
     }
@@ -141,7 +116,6 @@ const Home = () => {
     const resetSpeakingState = () => {
       if (hasCleanedUp) return
       hasCleanedUp = true
-      console.log(' Resetting speaking state')
       setIsSpeaking(false)
       isSpeakingRef.current = false
       setTimeout(() => {
@@ -152,28 +126,21 @@ const Home = () => {
 
     // Set fallback timer
     const fallbackTimer = setTimeout(() => {
-      console.log('⏰ Fallback timeout triggered')
       resetSpeakingState()
     }, fallbackTimeout)
 
     // Handle speech events
     utterance.onstart = () => {
-      console.log(' AI Started Speaking')
-      console.log(' Volume:', utterance.volume, 'Rate:', utterance.rate, 'Pitch:', utterance.pitch)
-      console.log('Selected Voice:', utterance.voice?.name || 'Default')
       setIsSpeaking(true)
       isSpeakingRef.current = true
     }
 
     utterance.onend = () => {
-      console.log('🤐 AI Finished Speaking')
       clearTimeout(fallbackTimer)
       resetSpeakingState()
     }
 
     utterance.onerror = (error) => {
-      console.log(' Speech Error:', error.error)
-      console.log('Full Error Object:', error)
       clearTimeout(fallbackTimer)
       resetSpeakingState()
     }
@@ -228,16 +195,12 @@ const Home = () => {
 
       if (indianEnglishVoice) {
         utterance.voice = indianEnglishVoice
-        console.log(' Using Indian English voice:', indianEnglishVoice.name)
       } else if (indianFemaleVoice) {
         utterance.voice = indianFemaleVoice
-        console.log(' Using Indian Female voice:', indianFemaleVoice.name)
       } else if (femaleVoice) {
         utterance.voice = femaleVoice
-        console.log(' Using Female voice:', femaleVoice.name)
       } else if (englishVoice) {
         utterance.voice = englishVoice
-        console.log(' Using English voice:', englishVoice.name)
       }
 
       return true
@@ -264,26 +227,10 @@ const Home = () => {
             setVoiceForUtterance()
           }
 
-          // Check system audio state
-          console.log(' System Checks:')
-          console.log('   - SpeechSynthesis ready:', window.speechSynthesis.speaking === false)
-          console.log('   - Utterance volume:', utterance.volume)
-          console.log('   - Browser audio context:', typeof AudioContext !== 'undefined' ? 'Available' : 'Not available')
-
           window.speechSynthesis.speak(utterance)
-          console.log('🎵 Speech synthesis speak() called')
-
-          // Chrome-specific: Check if speech is actually queued
-          setTimeout(() => {
-            console.log(' Speech Status Check:')
-            console.log('   - Speaking:', window.speechSynthesis.speaking)
-            console.log('   - Pending:', window.speechSynthesis.pending)
-            console.log('   - Paused:', window.speechSynthesis.paused)
-          }, 200)
         }, 50)
 
       } catch (error) {
-        console.log('Speech synthesis error:', error)
         clearTimeout(fallbackTimer)
         resetSpeakingState()
       }
@@ -293,7 +240,6 @@ const Home = () => {
   // COMMAND PROCESSING
 
   const handleCommandType = (type, userInput, assistantResponse) => {
-    console.log('Processing command:', type, 'Input:', userInput)
 
     switch (type) {
       case 'get_time': {
@@ -362,12 +308,10 @@ const Home = () => {
       }
 
       case 'general': {
-        console.log('General query processed')
         break
       }
 
       default: {
-        console.log('Unknown command type:', type)
         break
       }
     }
@@ -382,7 +326,6 @@ const Home = () => {
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) {
-      console.log(' Speech recognition not supported')
       return
     }
 
@@ -390,7 +333,6 @@ const Home = () => {
     if (!hasUserInteracted.current) {
       hasUserInteracted.current = true
       if (!speechInitialized.current) {
-        console.log('🎙️ First voice interaction - initializing speech')
         initializeSpeech()
       }
     }
@@ -402,27 +344,23 @@ const Home = () => {
     recognitionRef.current = recognition
 
     recognition.onstart = () => {
-      console.log('🎙️ Manual recognition started')
       setIsListening(true)
       setUserText('')
       setAiText('')
     }
 
     recognition.onend = () => {
-      console.log('🎙️ Manual recognition ended')
       setIsListening(false)
       recognitionRef.current = null
     }
 
     recognition.onerror = (event) => {
-      console.log(' Recognition error:', event.error)
       setIsListening(false)
       recognitionRef.current = null
     }
 
     recognition.onresult = async (e) => {
       const transcript = e.results[e.results.length - 1][0].transcript.trim()
-      console.log('🎯 Speech detected:', transcript)
 
       setIsListening(false)
       setUserText(transcript)
@@ -441,7 +379,7 @@ const Home = () => {
             const userResponse = await axios.get(`${serverUrl}/api/user/current`, { withCredentials: true })
             setUserData(userResponse.data)
           } catch (error) {
-            console.log('Error refreshing user data:', error)
+            // Handle refresh error silently
           }
 
           if (!wasHandledLocally) {
@@ -452,7 +390,6 @@ const Home = () => {
         }
 
       } catch (error) {
-        console.error('API Error:', error)
 
         if (error.response?.status === 429) {
           speak('Sorry, the AI service quota has been exceeded. Please try again later.')
@@ -472,18 +409,16 @@ const Home = () => {
     try {
       recognition.start()
     } catch (error) {
-      console.log('Failed to start recognition:', error)
       setIsListening(false)
     }
   }
 
   const stopListening = () => {
     if (recognitionRef.current && isListening) {
-      console.log('Stopping manual recognition')
       try {
         recognitionRef.current.stop()
       } catch (error) {
-        console.log('Error stopping recognition:', error)
+        // Handle stop error silently
       }
     }
     setIsListening(false)
@@ -608,7 +543,6 @@ const Home = () => {
                 if (!hasUserInteracted.current) {
                   hasUserInteracted.current = true
                   if (!speechInitialized.current) {
-                    console.log('🎙️ First interaction - initializing speech')
                     initializeSpeech()
                   }
                 }
@@ -685,7 +619,7 @@ const Home = () => {
                     <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
                     <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
                   </div>
-                  <span className="text-white/70 text-lg">Say "{userData?.assistantName}" to get started...</span>
+                  <span className="text-white/70 text-lg">I'm listening...</span>
                 </div>
               ) : (
                 <p className="text-white text-lg leading-relaxed">

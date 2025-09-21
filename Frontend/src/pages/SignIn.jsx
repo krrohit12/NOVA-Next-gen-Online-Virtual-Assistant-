@@ -14,6 +14,8 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isScratched, setIsScratched] = useState(false);
+  const [isScratching, setIsScratching] = useState(false);
   
   const { serverUrl ,userData,setUserData } = useContext(UserDataContext);
   const navigate = useNavigate();
@@ -93,8 +95,109 @@ const SignIn = () => {
     navigate('/signup');
   };
 
+  const handleDemoLogin = async() => {
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      let result = await axios.post(`${serverUrl}/api/auth/signin`, {
+        email: 'krrohit.2345@gmail.com',
+        password: '123456'
+      }, { withCredentials: true });
+      setUserData(result.data)
+      console.log(result.data);
+      setSuccess('Demo login successful! Redirecting...');
+
+      // Navigate to customize page immediately after demo login
+      navigate('/customize');
+
+    } catch (error) {
+      setUserData(null);
+      console.log(error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else if (error.response && error.response.status === 401) {
+        setError('Demo credentials are invalid.');
+      } else if (error.response && error.response.status === 404) {
+        setError('Demo user not found.');
+      } else {
+        setError('Network error. Please try again later.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="h-screen w-screen fixed inset-0 overflow-hidden">
+    <>
+      <style>
+        {`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
+
+      {/* Scratch Card Overlay */}
+      {!isScratched && (
+        <div className="fixed top-4 left-4 z-40">
+          <div className="relative">
+            {/* Scratch Surface */}
+            <div
+              className={`relative bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
+                isScratching ? 'animate-pulse' : ''
+              }`}
+              onMouseDown={() => setIsScratching(true)}
+              onMouseUp={() => {
+                setIsScratching(false);
+                setTimeout(() => setIsScratched(true), 500);
+              }}
+              onMouseLeave={() => setIsScratching(false)}
+            >
+              {/* Scratch Pattern Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-silver via-gray-300 to-gray-400 rounded-xl opacity-90"></div>
+
+              {/* Scratch Text */}
+              <div className="relative z-10 text-center">
+                <p className="text-gray-800 font-bold text-sm">
+                  Recruiter??
+                </p>
+                <p className="text-gray-700 text-xs mt-1">
+                  Scratch here 👆
+                </p>
+              </div>
+
+              {/* Scratch Effects */}
+              {isScratching && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse rounded-xl"></div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revealed Demo Button */}
+      {isScratched && (
+        <div className="fixed top-4 left-4 z-40 animate-fadeIn">
+          <button
+            onClick={handleDemoLogin}
+            disabled={isLoading}
+            className="bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white font-bold px-4 py-3 rounded-xl shadow-lg hover:shadow-cyan-500/25 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            🎭 Demo Access
+          </button>
+        </div>
+      )}
+
+      <div className="h-screen w-screen fixed inset-0 overflow-hidden">
       {/* Background Image with Fallback */}
       <div 
         className="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900"
@@ -144,8 +247,8 @@ const SignIn = () => {
       {/* Main Content Container */}
       <div className="relative z-10 h-full flex">
         {/* Left Side - Form Section */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-4 lg:p-6 overflow-y-auto">
-          <div className="w-full max-w-md my-auto">
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-3 lg:p-6 overflow-y-auto hide-scrollbar" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="w-full max-w-sm lg:max-w-md my-auto">
             {/* Futuristic Form Container */}
             <form onSubmit={handleSignIn}>
               <div className="relative">
@@ -153,29 +256,23 @@ const SignIn = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-3xl blur-sm opacity-30 animate-pulse"></div>
                 
                 {/* Main Form Card */}
-                <div className="relative bg-black/60 backdrop-blur-2xl border border-cyan-400/30 rounded-3xl shadow-2xl p-8 overflow-hidden">
+                <div className="relative bg-black/60 backdrop-blur-2xl border border-cyan-400/30 rounded-3xl shadow-2xl p-6 lg:p-8 overflow-hidden">
                   {/* Animated Corner Decorations */}
                   <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-cyan-400 rounded-tl-3xl opacity-60"></div>
                   <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-pink-400 rounded-br-3xl opacity-60"></div>
                   
                   {/* Header Section */}
-                  <div className="text-center mb-8">
-                    <div className="flex justify-center mb-4">
-                      <div className="relative">
-                        <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full flex items-center justify-center relative z-10">
-                          <Sparkles className="w-8 h-8 text-white animate-pulse" />
-                        </div>
-                        {/* Pulsing Ring */}
-                        <div className="absolute inset-0 w-16 h-16 border-2 border-cyan-400 rounded-full animate-ping opacity-20"></div>
-                      </div>
-                    </div>
+                  <div className="text-center mb-6 lg:mb-8">
                     
-                    <h1 className="text-3xl lg:text-4xl font-bold mb-2">
+                    <h1 className="text-2xl lg:text-4xl font-bold mb-2">
                       <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                         Virtual Assistant
                       </span>
                     </h1>
-                    <h2 className="text-xl lg:text-2xl font-semibold text-white mb-2">
+                    <p className="text-sm lg:text-base text-gray-400 mb-2">
+                      Created by <span className="text-cyan-400 font-semibold">Rohit Kumar</span>
+                    </p>
+                    <h2 className="text-lg lg:text-2xl font-semibold text-white mb-2">
                       Access Portal
                     </h2>
                     
@@ -193,7 +290,7 @@ const SignIn = () => {
                   </div>
 
                   {/* Form Fields */}
-                  <div className="space-y-6">
+                  <div className="space-y-4 lg:space-y-6">
                     {/* Email Field */}
                     <div className="relative group">
                       <label className="block text-cyan-400 text-xs font-semibold mb-2 uppercase tracking-wide">
@@ -210,7 +307,7 @@ const SignIn = () => {
                           onChange={handleInputChange}
                           required
                           className="w-full pl-12 pr-4 py-3 bg-gray-900/50 backdrop-blur-sm border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 hover:border-gray-500"
-                          placeholder="neural@matrix.ai"
+                          placeholder="name@gmail.com"
                         />
                         <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 to-purple-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"></div>
                       </div>
@@ -233,7 +330,7 @@ const SignIn = () => {
                           required
                           minLength="6"
                           className="w-full pl-12 pr-12 py-3 bg-gray-900/50 backdrop-blur-sm border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-300 hover:border-gray-500"
-                          placeholder="Enter secure passkey"
+                          placeholder="Enter secured passkey"
                         />
                         <button
                           type="button"
@@ -259,7 +356,7 @@ const SignIn = () => {
                         </div>
                       ) : (
                         <div className="flex items-center justify-center">
-                          INITIATE CONNECTION
+                          Sign In
                           <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                         </div>
                       )}
@@ -267,10 +364,11 @@ const SignIn = () => {
                       {/* Button Scan Line Effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                     </button>
+
                   </div>
 
                   {/* Footer */}
-                  <div className="mt-8 text-center">
+                  <div className="mt-6 lg:mt-8 text-center">
                     <div className="flex items-center justify-center mb-4">
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent to-cyan-400/50"></div>
                       <span className="px-4 text-gray-400 text-xs uppercase tracking-wider">System Status</span>
@@ -278,7 +376,7 @@ const SignIn = () => {
                     </div>
                     
                     <p className="text-gray-300 text-sm">
-                      Need to register for network access?{" "}
+                      Need to register for access?{" "}
                       <button 
                         type="button"
                         onClick={handleSignUpNavigation}
@@ -300,6 +398,7 @@ const SignIn = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

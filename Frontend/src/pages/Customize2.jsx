@@ -17,7 +17,7 @@ export const Customize2 = () => {
     try {
         let formData=new FormData()
         formData.append("assistantName" , assisantName)
-      
+
       if(backendImage){
         formData.append("assistantImage",backendImage)
       }
@@ -28,7 +28,10 @@ export const Customize2 = () => {
 
       console.log(result.data)
       setUserData(result.data)
-      
+
+      // Navigate to home page after successful update
+      navigate("/")
+
     } catch (error) {
         console.log(error)
     } finally {
@@ -64,10 +67,7 @@ export const Customize2 = () => {
       {assisantName && (
         <button
           type="button"
-          onClick={() => {
-            navigate("/")
-            handleUpdateAssistant()
-        }}
+          onClick={handleUpdateAssistant}
           disabled={isLoading}
           className={`min-w-[300px] h-[60px] font-semibold rounded-full m-3 transition-colors ${
             isLoading 

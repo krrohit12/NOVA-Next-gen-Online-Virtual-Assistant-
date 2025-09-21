@@ -13,10 +13,10 @@ export const App = () => {
   return (
    <Routes>
     <Route path='/' element={
-      userData ? 
-        (userData?.assistantImage && userData?.assistantName) ? 
-          <Home/> : <Navigate to="/customize"/> 
-        : <Navigate to="/signin"/>
+      userData ?
+        (userData?.assistantImage && userData?.assistantName) ?
+          <Home/> : <Navigate to="/customize"/>
+        : <Navigate to="/signup"/>
     }/>
     <Route path='/signup' element={!userData ? <SignUp/> : <Navigate to="/"/>}/>
     <Route path='/signin' element={!userData ? <SignIn/> : <Navigate to="/"/>}/>
