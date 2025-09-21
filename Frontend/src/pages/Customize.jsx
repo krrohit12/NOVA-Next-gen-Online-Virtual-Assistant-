@@ -30,23 +30,32 @@ const Customize = () => {
   };
   const navigate =useNavigate()
   return (
-    <div className="w-full h-[100vh] bg-gradient-to-t from-black to-[#0c1141] flex justify-center items-center flex-col p-[20px] relative">
+    <>
+      <style>
+        {`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}
+      </style>
+      <div className="w-full min-h-screen bg-gradient-to-t from-black to-[#0c1141] flex justify-center items-start flex-col p-4 lg:p-[20px] relative overflow-x-hidden hide-scrollbar">
       <button
         onClick={() => navigate('/')}
-        className="absolute top-6 left-6 text-white hover:text-cyan-400 transition-colors p-2 rounded-full hover:bg-white/10"
+        className="absolute top-4 left-4 lg:top-6 lg:left-6 text-white hover:text-cyan-400 transition-colors p-2 rounded-full hover:bg-white/10 z-10"
       >
-        <IoArrowBack size={24} />
+        <IoArrowBack size={20} className="lg:w-6 lg:h-6" />
       </button>
-      <h1 className="text-white text-[30px] text-center mb-[30px]">
+      <h1 className="text-white text-xl sm:text-2xl lg:text-[30px] text-center mb-6 lg:mb-[30px] mt-16 lg:mt-0 px-2">
         Select your{" "}
-        <span
-          className="
-      text-blue-200"
-        >
+        <span className="text-blue-200">
           Assistant Image
         </span>
       </h1>
-      <div className="w-full max-w-[900px] flex justify-center items-center flex-wrap gap-[15px]">
+      <div className="w-full max-w-[900px] flex justify-center items-center flex-wrap gap-3 lg:gap-[15px] px-2">
         <Card image={image1} />
         <Card image={image2} />
         <Card image={image4} />
@@ -83,12 +92,13 @@ const Customize = () => {
         <button
           type="button"
           onClick={()=>navigate('/customize2')}
-          className="text-cyan-400 hover:text-cyan-300 min-w-[150px] h-[60px] bg-amber-50 font-semibold transition-colors hover:underline rounded-full m-3 cursor-pointer"
+          className="text-cyan-400 hover:text-cyan-300 min-w-[150px] h-[50px] lg:h-[60px] bg-amber-50 font-semibold transition-colors hover:underline rounded-full mt-6 mb-8 lg:m-3 cursor-pointer"
         >
           Next
         </button>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
